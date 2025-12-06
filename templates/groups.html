@@ -1,0 +1,32 @@
+<h2>Groups</h2>
+
+<form action="/add_group" method="post">
+    <input name="name" placeholder="Group name">
+    <button type="submit">Add Group</button>
+</form>
+
+<h3>Add Users to Group</h3>
+<form action="/add_user_to_group" method="post">
+    <select name="user_id">
+        {% for u in users %}
+        <option value="{{ u.id }}">{{ u.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="group_id">
+        {% for g in groups %}
+        <option value="{{ g.id }}">{{ g.name }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Add</button>
+</form>
+
+<h3>Groups List</h3>
+<ul>
+{% for g in groups %}
+<li>{{ g.name }}</li>
+{% endfor %}
+</ul>
+
+<a href="/">Home</a>

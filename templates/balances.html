@@ -1,0 +1,11 @@
+<h2>Balances</h2>
+
+<ul>
+{% for b in balances %}
+<li>
+    {{ users[b.from_user] }} owes {{ users[b.to_user] }} → ₹{{ "%.2f"|format(b.amount) }}
+</li>
+{% endfor %}
+</ul>
+
+<a href="/">Home</a>
