@@ -5,15 +5,21 @@
 }
 
 /* Base */
-body {
+html, body {
     margin: 0;
+    padding: 0;
+    height: 100%;
+    min-height: 100vh;
+}
+
+body {
     font-family: 'Poppins', sans-serif;
-        background-image: url('/static/bg.png'), linear-gradient(120deg, #eef2ff 100%, #f8fafc 100%);
+    background-image: url('/static/bg.png'), linear-gradient(120deg, #eef2ff 0%, #f8fafc 100%);
     background-size: cover, auto;
     background-position: center;
     background-attachment: fixed;
+    background-repeat: no-repeat;
     background-blend-mode: overlay;
-    min-height: 100vh;
     color: #212529;
 }
 
@@ -21,8 +27,6 @@ body {
 body.bg-light {
     background-color: transparent !important;
 }
-
-html, body { height: 100%; }
 
 /* App container (card) */
 .app-container {
