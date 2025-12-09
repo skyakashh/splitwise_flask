@@ -1,11 +1,30 @@
-<h2>Balances</h2>
+{% extends "base.html" %}
+{% block content %}
 
-<ul>
-{% for b in balances %}
-<li>
-    {{ users[b.from_user] }} owes {{ users[b.to_user] }} → ₹{{ "%.2f"|format(b.amount) }}
-</li>
-{% endfor %}
-</ul>
+<h2 class="mb-4">Balances</h2>
 
-<a href="/">Home</a>
+<div class="card shadow-sm p-4">
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Amount (₹)</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for b in balances %}
+        <tr>
+            <td>{{ users[b.from_user] }}</td>
+            <td>{{ users[b.to_user] }}</td>
+            <td>{{ "%.2f"|format(b.amount) }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</div>
+
+{% endblock %}
