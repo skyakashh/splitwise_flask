@@ -1,5 +1,12 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_file
 from models import db, User, Group, GroupMember, Expense, Balance
+
+# Data & plotting
+import io
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -104,6 +111,52 @@ def balances():
     balances = Balance.query.all()
     users = User.query.all()
     return render_template("balances.html", balances=balances, users={u.id: u.name for u in users})
+
+
+@app.route('/charts')
+def charts():
+    return render_template('charts.html')
+
+
+@app.route('/chart.png')
+def chart_png():
+    # Load balances
+    bal = Balance.query.all()
+    users = {u.id: u.name for u in User.query.all()}
+
+    rows = []
+    for b in bal:
+        rows.append({'from_user': b.from_user, 'to_user': b.to_user, 'amount': float(b.amount)})
+
+    if rows:
+        df = pd.DataFrame(rows)
+        received = df.groupby('to_user')['amount'].sum()
+        owed = df.groupby('from_user')['amount'].sum()
+        net = received.subtract(owed, fill_value=0)
+        net = net.sort_values(ascending=False)
+        labels = [users.get(int(uid), str(uid)) for uid in net.index]
+        values = net.values
+    else:
+        labels = []
+        values = []
+
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    if len(labels) == 0:
+        ax.text(0.5, 0.5, 'No balances to display', ha='center', va='center', fontsize=14)
+    else:
+        colors = plt.cm.Blues(range(50, 250, max(1, int(200 / max(1, len(labels))))))
+        ax.bar(labels, values, color=colors)
+        ax.axhline(0, color='k', linewidth=0.6)
+        ax.set_ylabel('Net (₹)')
+        ax.set_title('Net balances per user')
+        plt.xticks(rotation=45, ha='right')
+
+    plt.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=150)
+    plt.close(fig)
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
 
 
 if __name__ == "__main__":
