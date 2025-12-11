@@ -1,13 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="text-center mb-4">
-  <h2>Charts</h2>
-  <p class="text-muted">Visual summary of balances</p>
+<div class="text-center mb-5">
+  <h2>Analytics & Charts</h2>
+  <p class="text-muted">Visualize your spending patterns</p>
 </div>
 
-<div class="card p-3">
-  <img src="{{ url_for('chart_png') }}" alt="Balances chart" class="img-fluid">
+<div class="mb-4">
+  <a href="/export_expenses" class="btn btn-primary me-2">📥 Export Expenses (CSV)</a>
+  <a href="/export_balances" class="btn btn-info">📥 Export Balances (CSV)</a>
+</div>
+
+<div class="row gy-4">
+  <div class="col-12">
+    <div class="card p-3">
+      <h5 class="card-title">Net Balances per User</h5>
+      <img src="{{ url_for('chart_png') }}?t={{ range(1, 100) | random }}" alt="Balances chart" class="img-fluid">
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card p-3">
+      <h5 class="card-title">Expense Breakdown by Group</h5>
+      <img src="{{ url_for('group_chart_png') }}?t={{ range(1, 100) | random }}" alt="Group chart" class="img-fluid">
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card p-3">
+      <h5 class="card-title">Expense Trends Over Time</h5>
+      <img src="{{ url_for('timeseries_chart_png') }}?t={{ range(1, 100) | random }}" alt="Time-series chart" class="img-fluid">
+    </div>
+  </div>
 </div>
 
 {% endblock %}

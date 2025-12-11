@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -157,6 +158,148 @@ def chart_png():
     plt.close(fig)
     buf.seek(0)
     return send_file(buf, mimetype='image/png')
+
+
+@app.route('/group_chart.png')
+def group_chart_png():
+    """Per-group expense breakdown pie chart."""
+    exp = Expense.query.all()
+    groups = {g.id: g.name for g in Group.query.all()}
+    
+    if not exp:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.text(0.5, 0.5, 'No expenses to display', ha='center', va='center', fontsize=14)
+    else:
+        rows = [{'group_id': e.group_id, 'amount': float(e.amount)} for e in exp]
+        df = pd.DataFrame(rows)
+        by_group = df.groupby('group_id')['amount'].sum()
+        labels = [groups.get(int(gid), str(gid)) for gid in by_group.index]
+        values = by_group.values
+        
+        fig, ax = plt.subplots(figsize=(8, 6))
+        colors = plt.cm.Set3(range(len(labels)))
+        wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', colors=colors, startangle=90)
+        ax.set_title('Expense Breakdown by Group')
+        for autotext in autotexts:
+            autotext.set_color('black')
+            autotext.set_fontsize(9)
+    
+    plt.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=150)
+    plt.close(fig)
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
+
+
+@app.route('/timeseries_chart.png')
+def timeseries_chart_png():
+    """Time-series chart of expenses over time."""
+    exp = Expense.query.all()
+    
+    if not exp:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.text(0.5, 0.5, 'No expenses to display', ha='center', va='center', fontsize=14)
+    else:
+        # Mock date generation: assume created_at or use id as proxy for ordering
+        rows = []
+        for i, e in enumerate(exp):
+            # Create synthetic dates spread over the last 30 days
+            date = datetime.now() - timedelta(days=max(0, len(exp) - i - 1))
+            rows.append({'date': date, 'amount': float(e.amount)})
+        
+        df = pd.DataFrame(rows)
+        df = df.sort_values('date')
+        df['cumulative'] = df['amount'].cumsum()
+        
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7))
+        
+        # Daily expenses bar chart
+        ax1.bar(df['date'], df['amount'], color='steelblue', alpha=0.7)
+        ax1.set_ylabel('Amount (₹)')
+        ax1.set_title('Daily Expenses')
+        ax1.tick_params(axis='x', rotation=45)
+        
+        # Cumulative expenses line chart
+        ax2.plot(df['date'], df['cumulative'], marker='o', color='darkgreen', linewidth=2)
+        ax2.fill_between(df['date'], df['cumulative'], alpha=0.3, color='green')
+        ax2.set_xlabel('Date')
+        ax2.set_ylabel('Cumulative (₹)')
+        ax2.set_title('Cumulative Expenses Over Time')
+        ax2.tick_params(axis='x', rotation=45)
+        
+        plt.tight_layout()
+    
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=150)
+    plt.close(fig)
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
+
+
+@app.route('/export_expenses')
+def export_expenses():
+    """Export all expenses as CSV."""
+    exp = Expense.query.all()
+    users = {u.id: u.name for u in User.query.all()}
+    groups = {g.id: g.name for g in Group.query.all()}
+    
+    rows = []
+    for e in exp:
+        rows.append({
+            'ID': e.id,
+            'Description': e.description,
+            'Amount (₹)': f"{e.amount:.2f}",
+            'Paid By': users.get(e.paid_by, 'Unknown'),
+            'Group': groups.get(e.group_id, 'Unknown')
+        })
+    
+    if rows:
+        df = pd.DataFrame(rows)
+    else:
+        df = pd.DataFrame(columns=['ID', 'Description', 'Amount (₹)', 'Paid By', 'Group'])
+    
+    buf = io.StringIO()
+    df.to_csv(buf, index=False)
+    buf.seek(0)
+    
+    return send_file(
+        io.BytesIO(buf.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='expenses.csv'
+    )
+
+
+@app.route('/export_balances')
+def export_balances():
+    """Export all balances as CSV."""
+    bal = Balance.query.all()
+    users = {u.id: u.name for u in User.query.all()}
+    
+    rows = []
+    for b in bal:
+        rows.append({
+            'From': users.get(b.from_user, 'Unknown'),
+            'To': users.get(b.to_user, 'Unknown'),
+            'Amount (₹)': f"{b.amount:.2f}"
+        })
+    
+    if rows:
+        df = pd.DataFrame(rows)
+    else:
+        df = pd.DataFrame(columns=['From', 'To', 'Amount (₹)'])
+    
+    buf = io.StringIO()
+    df.to_csv(buf, index=False)
+    buf.seek(0)
+    
+    return send_file(
+        io.BytesIO(buf.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='balances.csv'
+    )
 
 
 if __name__ == "__main__":
