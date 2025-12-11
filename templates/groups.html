@@ -1,32 +1,53 @@
-<h2>Groups</h2>
+{% extends "base.html" %}
+{% block content %}
 
-<form action="/add_group" method="post">
-    <input name="name" placeholder="Group name">
-    <button type="submit">Add Group</button>
-</form>
+<h2 class="mb-4">Groups</h2>
 
-<h3>Add Users to Group</h3>
-<form action="/add_user_to_group" method="post">
-    <select name="user_id">
-        {% for u in users %}
-        <option value="{{ u.id }}">{{ u.name }}</option>
-        {% endfor %}
-    </select>
+<div class="card p-4 shadow-sm">
+    <form action="/add_group" method="post" class="row g-3">
+        <div class="col-auto">
+            <input name="name" class="form-control" placeholder="Group name">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-warning">Add Group</button>
+        </div>
+    </form>
+</div>
 
-    <select name="group_id">
-        {% for g in groups %}
-        <option value="{{ g.id }}">{{ g.name }}</option>
-        {% endfor %}
-    </select>
+<hr>
 
-    <button type="submit">Add</button>
-</form>
+<h3>Add User to Group</h3>
 
-<h3>Groups List</h3>
-<ul>
+<div class="card p-4 shadow-sm">
+    <form action="/add_user_to_group" method="post" class="row g-3">
+        <div class="col-md-4">
+            <select name="user_id" class="form-select">
+                {% for u in users %}
+                <option value="{{ u.id }}">{{ u.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <select name="group_id" class="form-select">
+                {% for g in groups %}
+                <option value="{{ g.id }}">{{ g.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button class="btn btn-primary">Add</button>
+        </div>
+    </form>
+</div>
+
+<h3 class="mt-4">Groups List</h3>
+
+<ul class="list-group">
 {% for g in groups %}
-<li>{{ g.name }}</li>
+<li class="list-group-item">{{ g.name }}</li>
 {% endfor %}
 </ul>
 
-<a href="/">Home</a>
+{% endblock %}

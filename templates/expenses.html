@@ -1,29 +1,50 @@
-<h2>Expenses</h2>
+{% extends "base.html" %}
+{% block content %}
 
-<form action="/add_expense" method="post">
-    <input name="description" placeholder="Description">
+<h2 class="mb-4">Expenses</h2>
 
-    <input name="amount" placeholder="Amount">
+<div class="card p-4 shadow-sm mb-4">
+    <form action="/add_expense" method="post" class="row g-3">
 
-    <select name="paid_by">
-        {% for u in users %}
-        <option value="{{ u.id }}">{{ u.name }}</option>
-        {% endfor %}
-    </select>
+        <div class="col-md-4">
+            <input name="description" class="form-control" placeholder="Description">
+        </div>
 
-    <select name="group_id">
-        {% for g in groups %}
-        <option value="{{ g.id }}">{{ g.name }}</option>
-        {% endfor %}
-    </select>
+        <div class="col-md-2">
+            <input name="amount" class="form-control" placeholder="Amount" type="number">
+        </div>
 
-    <button type="submit">Add Expense</button>
-</form>
+        <div class="col-md-3">
+            <select name="paid_by" class="form-select">
+                {% for u in users %}
+                <option value="{{ u.id }}">{{ u.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
 
-<ul>
+        <div class="col-md-3">
+            <select name="group_id" class="form-select">
+                {% for g in groups %}
+                <option value="{{ g.id }}">{{ g.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-12">
+            <button class="btn btn-success w-100">Add Expense</button>
+        </div>
+
+    </form>
+</div>
+
+<h3>All Expenses</h3>
+
+<ul class="list-group">
 {% for e in expenses %}
-<li>{{ e.description }} - ₹{{ e.amount }}</li>
+<li class="list-group-item">
+    <strong>{{ e.description }}</strong> — ₹{{ e.amount }}
+</li>
 {% endfor %}
 </ul>
 
-<a href="/">Home</a>
+{% endblock %}
