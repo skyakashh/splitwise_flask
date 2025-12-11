@@ -1,111 +1,67 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="row gy-4">
-    <div class="col-lg-6">
-        <div class="card p-3 mb-3">
-            <h4 class="mb-3">Create User</h4>
-            <div class="d-flex gap-2">
-                <input id="create_username" class="form-control" placeholder="Enter user name">
-                <button class="btn btn-primary" onclick="createUser()">Create</button>
-            </div>
-        </div>
+<div class="text-center mb-5">
+    <h1 class="display-5 fw-bold">Splitwise</h1>
+    <p class="lead text-muted">Manage groups, split expenses & track balances</p>
+</div>
 
-        <div class="card p-3 mb-3">
-            <h4 class="mb-3">Create Group</h4>
-            <div class="d-flex gap-2">
-                <input id="create_groupname" class="form-control" placeholder="Enter group name">
-                <button class="btn btn-warning" onclick="createGroup()">Create</button>
+<div class="row gy-4 justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <a href="/users" class="text-decoration-none">
+            <div class="card h-100 shadow-sm border-0 text-center p-5 hover-card">
+                <h3 class="mb-3">👥 Users</h3>
+                <p class="text-muted">Manage and add users to your groups</p>
+                <small class="text-primary">View →</small>
             </div>
-        </div>
+        </a>
     </div>
 
-    <div class="col-lg-6">
-        <div class="card p-3 mb-3">
-            <h4 class="mb-3">Add User to Group</h4>
-            <div class="row g-2">
-                <div class="col-6">
-                    <input id="group_userid" class="form-control" placeholder="User ID">
-                </div>
-                <div class="col-6">
-                    <input id="group_groupid" class="form-control" placeholder="Group ID">
-                </div>
-                <div class="col-12 mt-2">
-                    <button class="btn btn-primary w-100" onclick="addToGroup()">Add User</button>
-                </div>
+    <div class="col-md-6 col-lg-5">
+        <a href="/groups" class="text-decoration-none">
+            <div class="card h-100 shadow-sm border-0 text-center p-5 hover-card">
+                <h3 class="mb-3">👫 Groups</h3>
+                <p class="text-muted">Create and manage groups</p>
+                <small class="text-warning">View →</small>
             </div>
-        </div>
+        </a>
+    </div>
 
-        <div class="card p-3 mb-3">
-            <h4 class="mb-3">Split a Bill</h4>
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <input id="expense_groupid" class="form-control" placeholder="Group ID">
-                </div>
-                <div class="col-md-4">
-                    <input id="expense_paidby" class="form-control" placeholder="Paid By (User ID)">
-                </div>
-                <div class="col-md-4">
-                    <input id="expense_amount" class="form-control" placeholder="Amount">
-                </div>
-                <div class="col-12 mt-2">
-                    <button class="btn btn-success w-100" onclick="addExpense()">Split Bill</button>
-                </div>
+    <div class="col-md-6 col-lg-5">
+        <a href="/expenses" class="text-decoration-none">
+            <div class="card h-100 shadow-sm border-0 text-center p-5 hover-card">
+                <h3 class="mb-3">💸 Expenses</h3>
+                <p class="text-muted">Track and split bills</p>
+                <small class="text-success">View →</small>
             </div>
-        </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-5">
+        <a href="/balances" class="text-decoration-none">
+            <div class="card h-100 shadow-sm border-0 text-center p-5 hover-card">
+                <h3 class="mb-3">📊 Balances</h3>
+                <p class="text-muted">View who owes whom</p>
+                <small class="text-info">View →</small>
+            </div>
+        </a>
     </div>
 </div>
 
-<div id="response" class="response mt-3"></div>
-
-<script>
-async function api(url, method = "POST", data = {}) {
-    const opts = { method };
-    if (method !== "GET") {
-        opts.headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-        opts.body = new URLSearchParams(data);
-    }
-
-    const res = await fetch(url, opts);
-    const ct = res.headers.get('content-type') || '';
-    if (ct.includes('application/json')) {
-        return res.json();
-    }
-    // if server redirected to HTML page (redirect responses), return plain text and status
-    const text = await res.text();
-    return { status: res.status, text };
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-async function createUser(){
-    let name = document.getElementById("create_username").value;
-    if (!name) { document.getElementById("response").innerText = 'Please enter a name.'; return; }
-    let r = await api("/add_user", "POST", { name });
-    document.getElementById("response").innerText = r.text || JSON.stringify(r, null, 2);
+.hover-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(15, 15, 15, 0.2) !important;
 }
 
-async function createGroup(){
-    let name = document.getElementById("create_groupname").value;
-    if (!name) { document.getElementById("response").innerText = 'Please enter a group name.'; return; }
-    let r = await api("/add_group", "POST", { name });
-    document.getElementById("response").innerText = r.text || JSON.stringify(r, null, 2);
+.hover-card h3 {
+    font-size: 2rem;
 }
-
-async function addToGroup(){
-    let user_id = document.getElementById("group_userid").value;
-    let group_id = document.getElementById("group_groupid").value;
-    if (!user_id || !group_id) { document.getElementById("response").innerText = 'Enter both User ID and Group ID.'; return; }
-    let r = await api("/add_user_to_group", "POST", { user_id, group_id });
-    document.getElementById("response").innerText = r.text || JSON.stringify(r, null, 2);
-}
-
-async function addExpense(){
-    let group_id = document.getElementById("expense_groupid").value;
-    let paid_by = document.getElementById("expense_paidby").value;
-    let amount = document.getElementById("expense_amount").value;
-    if (!group_id || !paid_by || !amount) { document.getElementById("response").innerText = 'Fill all fields.'; return; }
-    let r = await api("/add_expense", "POST", { group_id, paid_by, amount });
-    document.getElementById("response").innerText = r.text || JSON.stringify(r, null, 2);
-}
-</script>
+</style>
 
 {% endblock %}
