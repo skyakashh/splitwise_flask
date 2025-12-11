@@ -25,6 +25,7 @@ class Expense(db.Model):
     paid_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.String(200), nullable=True)
+    category = db.Column(db.String(50), default='Other', nullable=False)
 
 
 class Balance(db.Model):

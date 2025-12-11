@@ -28,6 +28,13 @@
 
   <div class="col-lg-6">
     <div class="card p-3">
+      <h5 class="card-title">Expenses by Category</h5>
+      <img src="{{ url_for('category_chart_png') }}?t={{ range(1, 100) | random }}" alt="Category chart" class="img-fluid">
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-3">
       <h5 class="card-title">Expense Trends Over Time</h5>
       <img src="{{ url_for('timeseries_chart_png') }}?t={{ range(1, 100) | random }}" alt="Time-series chart" class="img-fluid">
     </div>

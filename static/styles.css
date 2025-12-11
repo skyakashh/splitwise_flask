@@ -2,6 +2,14 @@
     --primary: #0d6efd;
     --muted: #6c757d;
     --card-bg: rgba(255,255,255,0.88);
+    --bg-color: linear-gradient(120deg, #eef2ff 0%, #f8fafc 100%);
+}
+
+html.dark-mode {
+    --primary: #5b9bff;
+    --muted: #a0a0a0;
+    --card-bg: rgba(45,45,45,0.95);
+    --bg-color: linear-gradient(120deg, #0a0a0a 0%, #1a1a1a 100%);
 }
 
 /* Base */
@@ -14,13 +22,19 @@ html, body {
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-image: url('/static/bg.png'), linear-gradient(120deg, #eef2ff 0%, #f8fafc 100%);
+    background-image: url('/static/bg.png'), var(--bg-color);
     background-size: cover, auto;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
     background-blend-mode: overlay;
     color: #212529;
+    transition: background-color 0.3s ease;
+}
+
+html.dark-mode body {
+    background-image: url('/static/bg.png'), var(--bg-color);
+    color: #e0e0e0;
 }
 
 /* Ensure bootstrap bg-light doesn't hide our background image */
@@ -36,10 +50,17 @@ body.bg-light {
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 6px 24px rgba(15,15,15,0.06);
+    transition: background-color 0.3s ease;
 }
 
 h1, h2 {
     color: #0b1a3a;
+    transition: color 0.3s ease;
+}
+
+html.dark-mode h1, 
+html.dark-mode h2 {
+    color: #e0e0e0;
 }
 
 /* Keep response readable */
@@ -49,10 +70,26 @@ h1, h2 {
     padding: 12px;
     border-radius: 8px;
     color: #0b1a3a;
+    transition: background-color 0.3s ease;
+}
+
+html.dark-mode .response {
+    background: #2d2d2d;
+    color: #e0e0e0;
 }
 
 /* Small helpers */
 .card p, .card .muted { color: var(--muted); }
+
+.card {
+    transition: background-color 0.3s ease;
+}
+
+html.dark-mode .card {
+    background-color: rgba(45,45,45,0.95);
+    color: #e0e0e0;
+    border-color: #444;
+}
 
 /* Make forms look consistent on small screens */
 @media (max-width: 576px) {

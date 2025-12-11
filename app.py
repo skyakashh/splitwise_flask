@@ -74,6 +74,11 @@ def expenses():
     expenses = Expense.query.all()
     groups = Group.query.all()
     users = User.query.all()
+    # Ensure all expenses have a category
+    for exp in expenses:
+        if not exp.category:
+            exp.category = 'Other'
+    db.session.commit()
     return render_template("expenses.html", expenses=expenses, groups=groups, users=users)
 
 
@@ -83,9 +88,10 @@ def add_expense():
     paid_by = int(request.form['paid_by'])
     amount = float(request.form['amount'])
     description = request.form['description']
+    category = request.form.get('category', 'Other')
 
     # Create expense entry
-    expense = Expense(group_id=group_id, paid_by=paid_by, amount=amount, description=description)
+    expense = Expense(group_id=group_id, paid_by=paid_by, amount=amount, description=description, category=category)
     db.session.add(expense)
     db.session.commit()
 
@@ -300,6 +306,37 @@ def export_balances():
         as_attachment=True,
         download_name='balances.csv'
     )
+
+
+@app.route('/category_chart.png')
+def category_chart_png():
+    """Expense breakdown by category."""
+    exp = Expense.query.all()
+    
+    if not exp:
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.text(0.5, 0.5, 'No expenses to display', ha='center', va='center', fontsize=14)
+    else:
+        rows = [{'category': e.category or 'Other', 'amount': float(e.amount)} for e in exp]
+        df = pd.DataFrame(rows)
+        by_cat = df.groupby('category')['amount'].sum()
+        labels = by_cat.index.tolist()
+        values = by_cat.values
+        
+        fig, ax = plt.subplots(figsize=(8, 6))
+        colors = plt.cm.Pastel1(range(len(labels)))
+        wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', colors=colors, startangle=90)
+        ax.set_title('Expenses by Category')
+        for autotext in autotexts:
+            autotext.set_color('black')
+            autotext.set_fontsize(9)
+    
+    plt.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', dpi=150)
+    plt.close(fig)
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
 
 
 if __name__ == "__main__":
